@@ -20,7 +20,14 @@ module ActiveRecord::TypedStore
 
       def typed_store(store_attribute, options={}, &block)
         dsl = DSL.new(options.fetch(:accessors, true), &block)
-
+        #test if const already set
+        begin
+          coder= const_get("#{store_attribute}_coder")
+        rescue Exception
+        #if not, set the coder
+          coder=create_coder(store_attribute, dsl.columns)
+        end
+        serialize store_attribute, coder.new(options[:coder])
         serialize store_attribute, create_coder(store_attribute, dsl.columns).new(options[:coder])
         store_accessor(store_attribute, dsl.accessors)
 
